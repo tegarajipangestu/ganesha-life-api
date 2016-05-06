@@ -19,6 +19,8 @@ db.connect(process.env.MONGODB_DEV);
 var port = process.env.PORT || 8080;        
 
 var mobileglapi = express.Router();              
+var api = express.Router();              
+
 
 mobileglapi.use(function(req, res, next) {
     console.log('Something is happening.');
@@ -77,7 +79,31 @@ mobileglapi.route('/posts').
 		})
 });
 
-app.use('/mobileglapi', mobileglapi);
 
+api.route('/posts').
+	post(function (req,res) {
+		var post = new Post();
+		var result = {error: false, alerts: {code: 200, message:"retrieve success"}};
+		Post.count({},function (err,c) {
+			post.title = req.body.title;
+			post.publisher = req.body.publisher;
+			post.publisherId = c+1;
+			post.content = req.body.content;
+			post.rating = 0;
+			post.postedAt = now.format('YYYY-MM-DD HH:mm:ss Z');
+			post.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
+			post.category = (req.body.category === undefined) ? 'umum' : req.body.category;
+			post.save(function (err) {
+				if (err) res.end(err);
+				result.data
+				res.json(post);
+			});
+		});
+});
+
+
+
+app.use('/mobileglapi', mobileglapi);
+app.use('/api', api);
 app.listen(port);
 console.log('Magic happens on port ' + port);
