@@ -1,5 +1,7 @@
 var mongoose     = require('mongoose');
 var Schema       = mongoose.Schema;
+var moment = require('moment');
+
 
 var PostSchema   = new Schema({
     postId: String,
@@ -15,7 +17,7 @@ var PostSchema   = new Schema({
 
 PostSchema.pre('save', function(next) {
 
-  this.postedAt = now.format('YYYY-MM-DD HH:mm:ss Z');
+  this.postedAt = moment().format('YYYY-MM-DD HH:mm:ss Z');
 	this.rating = 0;
 
   next();

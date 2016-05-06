@@ -86,7 +86,7 @@ mobileglapi.get('/seeding', function(req, res) {
 
 mobileglapi.route('/posts').
 post(function(req, res) {
-	var post = new Post();
+	Post.find({})
 
 });
 
@@ -96,7 +96,7 @@ api.route('/posts').post(function(req, res) {
 	Post.count({}, function(err, c) {
 		post.title = req.body.title;
 		post.publisher = req.body.publisher;
-		post.publisherId = db.posts.count + 1;
+		post.publisherId = c + 1;
 		post.content = req.body.content;
 		post.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
 		post.category = (req.body.category === undefined) ? '0' : req.body.category;
