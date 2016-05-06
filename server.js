@@ -81,15 +81,3 @@ app.use('/mobileglapi', mobileglapi);
 
 app.listen(port);
 console.log('Magic happens on port ' + port);
-
-
-var seed = [
-	{
-		"name": "highlight",
-		"description": "Semua yang hits ada di sini", 
-	},
-	{
-		"name": "lomba",
-		"description": "Semua yang lomba ada di sini", 
-	}
-];
