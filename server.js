@@ -1,11 +1,5 @@
-// server.js
-
-// BASE SETUP
-// =============================================================================
-
-// call the packages we need
-var express = require('express'); // call express
-var app = express(); // define our app using express
+var express    = require('express');        
+var app        = express();                 
 var bodyParser = require('body-parser');
 var db = require('mongoose');
 var dotenv = require('dotenv').config();
@@ -16,36 +10,33 @@ var Post = require('./app/model/post.js');
 var Category = require('./app/model/category.js');
 
 
-// configure app to use bodyParser()
-// this will let us get the data from a POST
-app.use(bodyParser.urlencoded({
-	extended: true
-}));
+app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 
 
-//configuration mongodb
 db.connect(process.env.MONGODB_DEV);
 
-var port = process.env.PORT || 8080; // set our port
+var port = process.env.PORT || 8080;        
 
-var mobileglapi = express.Router();
-var api = express.Router();
+var mobileglapi = express.Router();              
+var api = express.Router();              
+
 
 mobileglapi.use(function(req, res, next) {
-	// do logging
-	console.log('Something is happening.');
-	next(); // make sure we go to the next routes and don't stop here
+    console.log('Something is happening.');
+    next();
 });
 
-// test route to make sure everything is working (accessed at GET http://localhost:8080/api)
-api.get('/posts', function(req, res) {
-	res.json({
-		message: 'hooray! welcome to our api!'
-	});
+mobileglapi.get('/posts', function(req, res) {
+    res.json({ message: 'hooray! welcome to our api!' });   
 });
 
-mobileglapi.get('/seeding', function(req, res) {
+mobileglapi.post('/seeding', function(req, res) {
+	var secret = req.body.secret;
+	if (secret!==process.env.SEEDINGSECRET) {
+		res.json({"message" : "Hayo kate lapo cuk"});
+	};
+
 	var category = new Category();
 	category.collection.remove(function(err) {
 		if (err) {
@@ -91,32 +82,48 @@ post(function(req, res) {
 });
 
 
-api.route('/posts').post(function(req, res) {
-	var post = new Post();
-	Post.count({}, function(err, c) {
+mobileglapi.route('/posts').
+	post(function (req,res) {
+		var post = new Post();
 		post.title = req.body.title;
 		post.publisher = req.body.publisher;
-		post.publisherId = c + 1;
+		post.publisherId = db.posts.count + 1;
 		post.content = req.body.content;
+		post.rating = 0;
+		post.postedAt = now.format('YYYY-MM-DD HH:mm:ss Z');
 		post.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
-		post.category = (req.body.category === undefined) ? '0' : req.body.category;
-		post.save(function(err) {
+		post.category = (req.body.category === undefined) ? 'umum' : req.body.category;
+		post.save(function (err) {
 			if (err) res.end(err);
 			res.json(post);
 		})
-	})
 });
+
+
+api.route('/posts').
+	post(function (req,res) {
+		var post = new Post();
+		var result = {error: false, alerts: {code: 200, message:"retrieve success"}};
+		Post.count({},function (err,c) {
+			post.title = req.body.title;
+			post.publisher = req.body.publisher;
+			post.publisherId = c+1;
+			post.content = req.body.content;
+			post.rating = 0;
+			post.postedAt = now.format('YYYY-MM-DD HH:mm:ss Z');
+			post.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
+			post.category = (req.body.category === undefined) ? 'umum' : req.body.category;
+			post.save(function (err) {
+				if (err) res.end(err);
+				result.data
+				res.json(post);
+			});
+		});
+});
+
+
 
 app.use('/mobileglapi', mobileglapi);
 app.use('/api', api);
 app.listen(port);
 console.log('Magic happens on port ' + port);
-
-
-var seed = [{
-	"name": "highlight",
-	"description": "Semua yang hits ada di sini",
-}, {
-	"name": "lomba",
-	"description": "Semua yang lomba ada di sini",
-}];
