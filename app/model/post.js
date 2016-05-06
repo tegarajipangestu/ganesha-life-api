@@ -13,4 +13,11 @@ var PostSchema   = new Schema({
     category: String,
 });
 
+PostSchema.pre('save', function(next) {
+
+  this.postedAt = now.format('YYYY-MM-DD HH:mm:ss Z');
+	this.rating = 0;
+
+  next();
+});
 module.exports = mongoose.model('Post', PostSchema);
