@@ -42,7 +42,12 @@ router.get('/posts', function(req, res) {
     res.json({ message: 'hooray! welcome to our api!' });   
 });
 
-router.get('/seeding', function(req, res) {
+router.post('/seeding', function(req, res) {
+	var secret = req.body.secret;
+	if (secret!==process.env.SEEDINGSECRET) {
+		res.json({"message" : "Hayo kate lapo cuk"});
+	};
+	
 	var category = new Category();
 	category.collection.remove(function (err) {
 		if (err) {
