@@ -54,6 +54,19 @@ userSchema.methods.sendEmailAfterConfirmation = function(cb) {
   }, cb);
 };
 
+userSchema.methods.sendForgotPassword = function(cb) {
+  var body = 'Saudara ' + this.name + ', silahkan menuju tautan '+process.env.URL_DEV+'/changepassword?token='+this.perishable_token+' untuk menggunakan aplikasi Ganesha Life';
+  var title = 'Reset password Ganesha Life';
+  sendgrid.send({
+    to: this.email,
+    toname: this.name,
+    from: 'noreply@ganeshalife.org',
+    fromname: 'Ganesha Life',
+    subject: title,
+    text: body,
+  }, cb);
+};
+
 var User = mongoose.model('User', userSchema);
 
 module.exports = User;

@@ -162,6 +162,11 @@ post(function(req, res) {
 	})
 });
 
+rootapi.route('/change').get(function (req,res) {
+	//TODO menangani change password
+	res.send({message: "Halo sayang"});
+});
+
 mobileglapi.route('/changepassword').
 post(function(req, res) {
 	templateRes.error = true;
@@ -199,6 +204,51 @@ post(function(req, res) {
 	});
 });
 	
+
+mobileglapi.route('/forgotpassword').
+post(function(req, res) {
+	templateRes.error = true;
+	templateRes.alerts = {code: 200, message:"Forgot Password gagal"};
+	templateRes.data = {};
+	var token = req.get('token');
+	UserSession.findOne({sessionId: token}, function (err, session) {
+		User.findById(session.userId, function (err, user) {
+			if (err) {
+				res.send(templateRes);
+				return;
+			}
+			// if (user.confirmed === 0) {
+			// 	templateRes.alerts = {code: 200, message:"Anda belum konfirmasi email"};
+			// 	res.send(templateRes);
+			// 	return;
+			// }
+			if (req.body.email === user.email) {
+				user.perishable_token = randtoken.generate(32);
+				user.save(function (err) {
+					if (err) {
+						res.send(templateRes);
+						return;
+					}
+				});
+				user.sendForgotPassword(function (err) {
+					if (err) {
+						res.send(templateRes);
+						return;
+					}
+					templateRes.error = false;
+					templateRes.alerts = {code: 200, message:"Forgot Password request success"};
+					templateRes.data = {};	
+					res.json(templateRes);
+					return;				
+				});
+			}
+			else {
+				templateRes.alerts = {code: 200, message:"Email salah. Forgot Password gagal"};
+				res.send(templateRes);
+			}
+		}); 
+	});
+});
 
 api.route('/posts').
 post(function(req, res) {
