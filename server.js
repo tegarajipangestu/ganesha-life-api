@@ -119,11 +119,11 @@ post(function(req, res) {
 	var query = {};
 	query[mode] = req.body.username;
 	User.findOne(query, function(err, user) {
-		// if (user.confirmed === 0) {
-		// 	templateRes.alerts = {code: 200, message:"Anda belum konfirmasi email"};
-		// 	res.send(templateRes);
-		// 	return;
-		// }
+		if (user.confirmed === 0) {
+			templateRes.alerts = {code: 200, message:"Anda belum konfirmasi email"};
+			res.send(templateRes);
+			return;
+		}
 		if (user.password === md5(req.body.password)) {
 			var token = randtoken.generate(32);
 			UserSession.create({userId: user._id, sessionId: token, createdAt: now.format('dddd, MMMM Do YYYY, h:mm:ss a')}, function(err) {
@@ -217,11 +217,11 @@ post(function(req, res) {
 				res.send(templateRes);
 				return;
 			}
-			// if (user.confirmed === 0) {
-			// 	templateRes.alerts = {code: 200, message:"Anda belum konfirmasi email"};
-			// 	res.send(templateRes);
-			// 	return;
-			// }
+			if (user.confirmed === 0) {
+				templateRes.alerts = {code: 200, message:"Anda belum konfirmasi email"};
+				res.send(templateRes);
+				return;
+			}
 			if (req.body.email === user.email) {
 				user.perishable_token = randtoken.generate(32);
 				user.save(function (err) {
