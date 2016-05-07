@@ -22,10 +22,31 @@ URL
 http://<base_url>/mobileglapi/login
 ```
 body
-``` 	{“username”:”nickname”,“password”:”password”}
+``` 	
+{“username”:”nickname”,“password”:”password”}
 ```
-### Log Out
-
+response
+```
+{
+    "error": false,
+    "alerts": {
+        "code": "200",
+        "message": "login success"
+    },
+    "data": {
+        "user_id": 29,
+        "username": "Yanfa Adi Putra",
+        "email": "blabla@gmail.com",
+        "role": 1,
+        "token": "8f5f8683897f42aaa89163ba3d91951d"
+    }
+}
+```
+### Log Out (POST)
+Endpoint
+```
+http://<base_url>/mobileglapi/logout
+```
 ### ChangeA Password
 ### Forgot Password
 ### Sign Up

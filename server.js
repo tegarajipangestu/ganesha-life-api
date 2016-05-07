@@ -4,10 +4,15 @@ var bodyParser = require('body-parser');
 var db = require('mongoose');
 var dotenv = require('dotenv').config();
 var moment = require('moment');
+var md5 = require('md5');
+var randtoken = require('rand-token');
+
 var now = moment();
 
 var Post = require('./app/model/post.js');
 var Category = require('./app/model/category.js');
+var Follow = require('./app/model/follow.js');
+var User = require('./app/model/user.js');
 
 
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -38,7 +43,23 @@ mobileglapi.post('/seeding', function(req, res) {
 	};
 
 	var category = new Category();
+	var post = new Post();
+	var user = new User();
 	category.collection.remove(function(err) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			});
+		}
+	});
+	post.collection.remove(function(err) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			});
+		}
+	});
+	user.collection.remove(function(err) {
 		if (err) {
 			res.json({
 				"message": "Gagal cuk"
@@ -84,26 +105,15 @@ post(function(req, res) {
 
 mobileglapi.route('/posts').
 	post(function (req,res) {
-		var post = new Post();
-		post.title = req.body.title;
-		post.publisher = req.body.publisher;
-		post.publisherId = db.posts.count + 1;
-		post.content = req.body.content;
-		post.rating = 0;
-		post.postedAt = now.format('YYYY-MM-DD HH:mm:ss Z');
-		post.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
-		post.category = (req.body.category === undefined) ? 'umum' : req.body.category;
-		post.save(function (err) {
-			if (err) res.end(err);
-			res.json(post);
-		})
+		Follow.findById(req.body.userId, function (err, follows) {
+				console.log(follows);
+		}) 
 });
 
 
 api.route('/posts').
 	post(function (req,res) {
 		var post = new Post();
-		var result = {error: false, alerts: {code: 200, message:"retrieve success"}};
 		Post.count({},function (err,c) {
 			post.title = req.body.title;
 			post.publisher = req.body.publisher;
@@ -114,14 +124,43 @@ api.route('/posts').
 			post.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
 			post.category = (req.body.category === undefined) ? 'umum' : req.body.category;
 			post.save(function (err) {
-				if (err) res.end(err);
-				result.data
+				if (err) res.send(err);
 				res.json(post);
 			});
 		});
 });
 
+api.route('/users').
+	post(function (req,res) {
+		var user = new User();
+		user.username = req.body.username;
+		user.name = req.body.name;
+		user.password = md5(req.body.password);
+		user.email = req.body.email;
+		user.perishable_token = randtoken.generate(32);
+		user.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
+		user.value = 10;
+		user.save(function (err) {
+			if (err) res.send(err);
+			res.json(user);
+		})
+});
 
+mobileglapi.route('/users').
+	post(function (req,res) {
+		var user = new User();
+		user.username = req.body.username;
+		user.name = req.body.name;
+		user.password = md5(req.body.password);
+		user.email = req.body.email;
+		user.perishable_token = randtoken.generate(32);
+		user.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
+		user.value = 10;
+		user.save(function (err) {
+			if (err) res.send(err);
+			res.json(user);
+		})
+});
 
 app.use('/mobileglapi', mobileglapi);
 app.use('/api', api);
