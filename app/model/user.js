@@ -26,7 +26,8 @@ var userSchema = new Schema({
   imageUrl: String,
   value: Number,
   created_at: Date,
-  updated_at: Date
+  updated_at: Date,
+  token: String
 });
 
 userSchema.methods.sendEmailAfterRegistration = function(cb) {

@@ -31,6 +31,10 @@ var mobileglapi = express.Router();
 var api = express.Router();
 var rootapi = express.Router();
 
+var templateRes = {};
+templateRes['error'] = true;
+templateRes['alerts'] = {code: 200, message: "Tidak bisa gans"};
+
 mobileglapi.use(function(req, res, next) {
 	console.log('Something is happening.');
 	next();
@@ -53,26 +57,14 @@ mobileglapi.post('/seeding', function(req, res) {
 	var category = new Category();
 	var post = new Post();
 	var user = new User();
-	category.collection.remove(function(err) {
-		if (err) {
-			res.json({
-				"message": "Gagal cuk"
-			});
-		}
+
+	UserSession.collection.remove(function (err) {	
 	});
-	post.collection.remove(function(err) {
-		if (err) {
-			res.json({
-				"message": "Gagal cuk"
-			});
-		}
+	Category.collection.remove(function (err) {	
 	});
-	user.collection.remove(function(err) {
-		if (err) {
-			res.json({
-				"message": "Gagal cuk"
-			});
-		}
+	User.collection.remove(function (err) {	
+	});
+	Post.collection.remove(function (err) {	
 	});
 	var categories =
 		[{
@@ -120,36 +112,93 @@ post(function(req, res) {
 
 mobileglapi.route('/login').
 post(function(req, res) {
+	templateRes.error = true;
+	templateRes.alerts = {code: 200, message:"Login salah, silahkan cek email dan password anda"};
+	templateRes.data = {};
 	var mode = email_regex.test(req.body.username) ? "email" : "username";
 	var query = {};
 	query[mode] = req.body.username;
 	User.findOne(query, function(err, user) {
+		// if (user.confirmed === 0) {
+		// 	templateRes.alerts = {code: 200, message:"Anda belum konfirmasi email"};
+		// 	res.send(templateRes);
+		// 	return;
+		// }
 		if (user.password === md5(req.body.password)) {
 			var token = randtoken.generate(32);
-			UserSession.create({userId: user._id,sessionId: token}, function(err) {
-				if (err) res.send({
-					message: "Error creating session"
-				});
-				res.send({token: token});
+			UserSession.create({userId: user._id, sessionId: token, createdAt: now.format('dddd, MMMM Do YYYY, h:mm:ss a')}, function(err) {
+				if (err) {
+					res.send(templateRes);
+					return
+				}
+				else {
+					user.token = token;
+					templateRes.error = false;
+					templateRes.alerts = {code: 200, message:"Login berhasil"};
+					templateRes.data = user;
+					res.send(templateRes);	
+					return				
+				}
 			});
 		} else {
-			res.send({
-				message: "salah password gan"
-			})
+			res.send(templateRes);
 		}
 	});
-	// req.body.username =
-	// 	req.body.password =
 });
 
 mobileglapi.route('/logout').
 post(function(req, res) {
+	templateRes.error = true;
+	templateRes.alerts = {code: 200, message:"Logout gagal"};
+	templateRes.data = {};
 	UserSession.find({sessionId: req.body.token}).remove(function (err) {
-		if (err) res.send(err);
-		res.json({message: "Anda berhasil logout"});
+		if (err) {
+			res.send(templateRes);
+			return
+		}
+		templateRes.error = false;
+		templateRes.alerts = {code: 200, message:"Logout gagal"};
+		res.json(templateRes);
 	})
 });
 
+mobileglapi.route('/changepassword').
+post(function(req, res) {
+	templateRes.error = true;
+	templateRes.alerts = {code: 200, message:"Change Password gagal"};
+	templateRes.data = {};
+	var token = req.get('token');
+	UserSession.findOne({sessionId: token}, function (err, session) {
+		User.findById(session.userId, function (err, user) {
+			if (err) {
+				res.send(templateRes);
+				return;
+			}
+			if (md5(req.body.oldPassword) === user.password) {
+				user.password = md5(req.body.newPassword);
+				console.log(user);
+				user.save(function (err) {
+					if (err) {
+						console.log(err);
+						res.send(templateRes);
+						return;
+					}
+					else {
+						templateRes.error = true;
+						templateRes.alerts = {code: 200, message:"Change Password berhasil"};
+						templateRes.data = user;
+						res.send(templateRes);
+						return;
+					}
+				});
+			}
+			else {
+				res.send(templateRes);
+			}
+		}); 
+	});
+});
+	
 
 api.route('/posts').
 post(function(req, res) {
@@ -160,7 +209,7 @@ post(function(req, res) {
 		post.publisherId = c + 1;
 		post.content = req.body.content;
 		post.rating = 0;
-		post.postedAt = now.format('YYYY-MM-DD HH:mm:ss Z');
+		post.postedAt = now.format('dddd, MMMM Do YYYY, h:mm:ss a');
 		post.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
 		post.category = (req.body.category === undefined) ? 'umum' : req.body.category;
 		post.save(function(err) {
@@ -182,11 +231,18 @@ post(function(req, res) {
 	user.value = 10;
 	user.confirmed = 0;
 	user.save(function(err) {
-		if (err) res.send(err);
+		if (err) {
+			res.send(err);
+			return;
+		}
 		console.log("Save record successful");
 		user.sendEmailAfterRegistration(function(err, json) {
-			console.log(json);
-			res.json(user);
+			if (err) res.send(err);
+			templateRes.error = false;
+			templateRes.alerts = {code:200, message: "Login success"};
+			templateRes.data = user;
+			// console.log(templateRes);
+			res.json(templateRes);
 		});
 	});
 });
