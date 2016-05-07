@@ -54,10 +54,6 @@ mobileglapi.post('/seeding', function(req, res) {
 		});
 	};
 
-	var category = new Category();
-	var post = new Post();
-	var user = new User();
-
 	UserSession.collection.remove(function (err) {	
 	});
 	Category.collection.remove(function (err) {	
@@ -66,6 +62,16 @@ mobileglapi.post('/seeding', function(req, res) {
 	});
 	Post.collection.remove(function (err) {	
 	});
+	var users = {
+    "confirmed": 0,
+    "value": 100,
+    "imageUrl": "https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true",
+    "perishable_token": randtoken.generate(32),
+    "email": "tegarajipangestu@gmail.com",
+    "password": md5(process.env.PASSWORD_DUMMY),
+    "name": "Tegar Aji Pangestu",
+    "username": "tegarnization",	
+	}
 	var categories =
 		[{
 			name: "highlight",
@@ -83,7 +89,7 @@ mobileglapi.post('/seeding', function(req, res) {
 			name: "isukampus",
 			description: "Semua yang beasiswa ada di sini"
 		}, ];
-	category.collection.insert(categories, function(err, docs) {
+	Category.collection.insert(categories, function(err, docs) {
 		if (err) {
 			res.json({
 				"message": "Gagal cuk"
@@ -93,7 +99,33 @@ mobileglapi.post('/seeding', function(req, res) {
 				"message": "Berhasil cuk"
 			});
 		}
-	})
+	});
+	User.collection.insert(users, function(err, docs) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			})
+		} else {
+			res.json({
+				"message": "Berhasil cuk"
+			});
+		}
+	});
+	User.findOne({username: "tegarnization"}, function (err, user) {
+		var userId = 	user._id;
+		var usersessions = {sessionId: randtoken.generate(32), userId: userId};
+		UserSession.collection.insert(usersessions, function(err, docs) {
+			if (err) {
+				res.json({
+					"message": "Gagal cuk"
+				})
+			} else {
+				res.json({
+					"message": "Berhasil cuk"
+				});
+			}
+		});
+	});
 });
 
 mobileglapi.route('/posts').
