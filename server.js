@@ -142,6 +142,14 @@ post(function(req, res) {
 	// 	req.body.password =
 });
 
+mobileglapi.route('/logout').
+post(function(req, res) {
+	UserSession.find({sessionId: req.body.token}).remove(function (err) {
+		if (err) res.send(err);
+		res.json({message: "Anda berhasil logout"});
+	})
+});
+
 
 api.route('/posts').
 post(function(req, res) {
