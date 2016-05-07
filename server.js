@@ -289,7 +289,35 @@ post(function(req, res) {
 		user.sendEmailAfterRegistration(function(err, json) {
 			if (err) res.send(err);
 			templateRes.error = false;
-			templateRes.alerts = {code:200, message: "Login success"};
+			templateRes.alerts = {code:200, message: "Register success"};
+			templateRes.data = user;
+			// console.log(templateRes);
+			res.json(templateRes);
+		});
+	});
+});
+
+mobileglapi.route('/signup').
+post(function(req, res) {
+	var user = new User();	
+	user.username = req.body.username;
+	user.name = req.body.name ? req.body.name : req.body.username;
+	user.password = md5(req.body.password);
+	user.email = req.body.email;
+	user.perishable_token = randtoken.generate(32);
+	user.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
+	user.value = 10;
+	user.confirmed = 0;
+	user.save(function(err) {
+		if (err) {
+			res.send(err);
+			return;
+		}
+		console.log("Save record successful");
+		user.sendEmailAfterRegistration(function(err, json) {
+			if (err) res.send(err);
+			templateRes.error = false;
+			templateRes.alerts = {code:200, message: "Signup success"};
 			templateRes.data = user;
 			// console.log(templateRes);
 			res.json(templateRes);
