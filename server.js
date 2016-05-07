@@ -8,11 +8,13 @@ var md5 = require('md5');
 var randtoken = require('rand-token');
 
 var now = moment();
+var email_regex = /[A-Z0-9._%+-]+@[A-Z0-9.-]+.[A-Z]{2,4}/igm;
 
 var Post = require('./app/model/post.js');
 var Category = require('./app/model/category.js');
 var Follow = require('./app/model/follow.js');
 var User = require('./app/model/user.js');
+var UserSession = require('./app/model/user_session.js');
 
 
 app.use(bodyParser.urlencoded({
@@ -114,6 +116,30 @@ post(function(req, res) {
 	Follow.findById(req.body.userId, function(err, follows) {
 		console.log(follows);
 	})
+});
+
+mobileglapi.route('/login').
+post(function(req, res) {
+	var mode = email_regex.test(req.body.username) ? "email" : "username";
+	var query = {};
+	query[mode] = req.body.username;
+	User.findOne(query, function(err, user) {
+		if (user.password === md5(req.body.password)) {
+			var token = randtoken.generate(32);
+			UserSession.create({userId: user._id,sessionId: token}, function(err) {
+				if (err) res.send({
+					message: "Error creating session"
+				});
+				res.send({token: token});
+			});
+		} else {
+			res.send({
+				message: "salah password gan"
+			})
+		}
+	});
+	// req.body.username =
+	// 	req.body.password =
 });
 
 
