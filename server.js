@@ -272,6 +272,27 @@ post(function(req, res) {
 	});
 });
 
+mobileglapi.route('/searchpost').
+post(function(req, res) {
+	templateRes.error = true;
+	templateRes.alerts = {code: 200, message:"Retrieve post gagal"};
+	templateRes.data = {};
+	var result = [];
+	templateRes.data = [];
+	UserSession.findOne({sessionId:req.get('token')}, function (err,session) {
+		if (!session) {
+			templateRes.alerts = {code: 401, message:"Anda tidak terotentikasi"};
+			res.send(templateRes);
+		}
+	});
+	Post.find({content: new RegExp(req.body.searchQuery, "i")}, function (err, posts) {
+		templateRes.error = true;
+		templateRes.alerts = {code: 200, message:"Retrieve post berhasil"};
+		templateRes.data = posts;
+		res.send(templateRes);
+	});
+});
+
 mobileglapi.route('/setbookmark').
 post(function (req,res) {
 	templateRes.error = true;

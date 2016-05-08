@@ -2,7 +2,6 @@ var mongoose     = require('mongoose');
 var Schema       = mongoose.Schema;
 var moment = require('moment');
 
-
 var PostSchema   = new Schema({
     postId:String,
     title: String,
