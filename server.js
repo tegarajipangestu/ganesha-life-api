@@ -77,6 +77,10 @@ mobileglapi.post('/seeding', function(req, res) {
 	Rating.collection.remove(function (err) {	
 	});
 
+	var usersession = {
+		userId: "1",
+		sessionId:"1",
+	}
 	var ratings = {
 		userId: "1",
 		postId: "1",
@@ -159,6 +163,14 @@ mobileglapi.post('/seeding', function(req, res) {
 			kategori: 1,
 			imageUrl: "http://cdn.tmpo.co/data/2016/02/15/id_482531/482531_620.jpg",
 		}
+	UserSession.collection.insert(usersession, function(err, docs) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			});
+			return;
+		}
+	});
 	Rating.collection.insert(ratings, function(err, docs) {
 		if (err) {
 			res.json({
@@ -224,21 +236,6 @@ mobileglapi.post('/seeding', function(req, res) {
 			return;
 		}
 	});
-	User.findOne({username: "tegarnization"}, function (err, user) {
-		var userId = 	user._id;
-		var usersessions = {sessionId: randtoken.generate(32), userId: userId};
-		UserSession.collection.insert(usersessions, function(err, docs) {
-			if (err) {
-				res.json({
-					"message": "Gagal cuk"
-				})
-			} else {
-				res.json({
-					"message": "Berhasil cuk"
-				});
-			}
-		});
-	});
 });
 
 mobileglapi.route('/posts').
@@ -246,7 +243,13 @@ post(function(req, res) {
 	templateRes.error = true;
 	templateRes.alerts = {code: 200, message:"Retrieve post gagal"};
 	var result = [];
-
+	templateRes.data = [];
+	UserSession.findOne({sessionId:req.get('token')}, function (err,session) {
+		if (!session) {
+			templateRes.alerts = {code: 401, message:"Anda tidak terotentikasi"};
+			res.send(templateRes);
+		}
+	})
 	FollowPublisher.find({userId:req.body.userId}, function(err, follows) {
 		if (err) {
 			templateRes.alerts = {code: 200, message:"User tidak memfollow publisher apapun"};

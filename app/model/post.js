@@ -4,6 +4,7 @@ var moment = require('moment');
 
 
 var PostSchema   = new Schema({
+    postId:String,
     title: String,
     publisher: String,
     publisherId: String,
