@@ -4,7 +4,6 @@ var moment = require('moment');
 
 
 var PostSchema   = new Schema({
-    postId: String,
     title: String,
     publisher: String,
     publisherId: String,
@@ -12,7 +11,7 @@ var PostSchema   = new Schema({
     rating: Number,
     postedAt: Date,
     imageUrl: String, 
-    category: String,
+    kategori: Number,
 });
 
 PostSchema.pre('save', function(next) {

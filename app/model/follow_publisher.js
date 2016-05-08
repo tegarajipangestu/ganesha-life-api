@@ -7,4 +7,4 @@ var FollowSchema   = new Schema({
     userId: String
 });
 
-module.exports = mongoose.model('Follow', FollowSchema);
+module.exports = mongoose.model('FollowPublisher', FollowSchema);
