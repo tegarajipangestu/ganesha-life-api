@@ -15,6 +15,10 @@ var Category = require('./app/model/category.js');
 var Follow = require('./app/model/follow.js');
 var User = require('./app/model/user.js');
 var UserSession = require('./app/model/user_session.js');
+var Publisher = require('./app/model/publisher.js');
+var Bookmark = require('./app/model/bookmark.js');
+var Follow = require('./app/model/follow.js');
+var Rating = require('./app/model/rating.js');
 
 
 app.use(bodyParser.urlencoded({
@@ -62,8 +66,36 @@ mobileglapi.post('/seeding', function(req, res) {
 	});
 	Post.collection.remove(function (err) {	
 	});
+	Publisher.collection.remove(function (err) {	
+	});
+	Bookmark.collection.remove(function (err) {	
+	});
+	Follow.collection.remove(function (err) {	
+	});
+	Rating.collection.remove(function (err) {	
+	});
+
+	var ratings = {
+		userId: "1",
+		postId: "1",
+		rating: 3,
+		description: "Post ini sangat inspiratif"
+	}
+	var bookmarks = {
+		user_id: "1",
+		post_id:"1",
+		title: "Secret Behind AADC 2`s Success Revealed",
+		publisherId: "1",
+		publisher: "HMIF ITB",
+		rating: 4.0,
+	}
+	var follows = {
+		user_id: "1",
+		publisher_id:"1",
+	}
 	var users = {
-    "confirmed": 0,
+		"_id":"1",
+    "confirmed": 1,
     "value": 100,
     "imageUrl": "https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true",
     "perishable_token": randtoken.generate(32),
@@ -72,23 +104,121 @@ mobileglapi.post('/seeding', function(req, res) {
     "name": "Tegar Aji Pangestu",
     "username": "tegarnization",	
 	}
+	var publisher = {
+		"_id": "1",
+    "confirmed": 1,
+    "value": 50,
+    "imageUrl": "https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true",
+    "perishable_token": randtoken.generate(32),
+    "email": "hmif@itb.ac.id",
+    "password": md5(process.env.PASSWORD_DUMMY),
+    "name": "HMIF ITB",
+    "publisher": "HMIF ITB",
+    "username": "hmif_itb",	
+    "rating": 4.0,
+    "type":"Publisher",
+    "keterangan":"Himpunan Mahasiswa Informatika ITB"
+	}
 	var categories =
 		[{
+			_id:"1",
 			name: "highlight",
 			description: "Semua yang hits ada di sini"
 		}, {
+			_id:"2",
 			name: "lomba",
 			description: "Semua yang lomba ada di sini"
 		}, {
+			_id:"3",
 			name: "acara",
 			description: "Semua yang acara ada di sini"
 		}, {
+			_id:"4",
 			name: "beasiswa",
 			description: "Semua yang beasiswa ada di sini"
 		}, {
+			_id:"5",
 			name: "isukampus",
 			description: "Semua yang beasiswa ada di sini"
 		}, ];
+
+		var posts = {
+			title: "Secret Behind AADC 2`s Success Revealed",
+			publisher: "HMIF ITB",
+			publisherId: "1",
+			content: "- “Ada Apa Dengan Cinta 2” (What’s Up With Love 2) film has been attracting one million viewers since its premiere on April, 28, Mira Lesmana said. “From its premiere to the next five days [it has attracted] a million viewers, and I hope it continues to rise,” said the producer of “Ada Apa Dengan Cinta 2” (AADC 2) on the sidelines of a press conference with the cast in Surabaya as quoted by Bisnis.com on Thursday. Mira, also the scriptwriter of AADC 2, has extended her gratitude over the enthusiasm of Indonesian viewers, and the response that she said was overwhelming. She said that the number of viewers overseas, among others in Malaysia has helped the film scored two million ringgit or around Rp6.4 billion after five days of screening in 100 theatres in the country. The film has also received warm reception in Brunei Darussalam. However, she did not reveal the number of viewers. The press conference in Surabaya was also attended by AADC 2 filmmaker Riri Riza and the main cast, among others, Nicholas Saputra (Rangga), Dian Sastrowardoyo, (Cinta), Adinia Wirasti (Karmen), Sissy Prescillia (Milly) and Dennis Adhiswara (Mamet). Riri Riza revealed the secret behind the movie’s success. He claims that he is proud of AADC 2, because the actors are capable of playing their respective roles despite not being in their teens anymore. “Dian Sastrowardoyo, dispate being a mother in real life, was able to act like a single women and a girl who falls in love,” he said",
+			rating: 4.4,
+			postedAt: now.format('dddd, MMMM Do YYYY, h:mm:ss a'),
+			imageUrl: "http://cdn.tmpo.co/data/2016/02/15/id_482531/482531_620.jpg",
+			category: 1
+		}
+		var posts = {
+			_id: "1",
+			title: "Secret Behind AADC 2`s Success Revealed",
+			publisher: "HMIF ITB",
+			publisherId: "1",
+			content: "- “Ada Apa Dengan Cinta 2” (What’s Up With Love 2) film has been attracting one million viewers since its premiere on April, 28, Mira Lesmana said. “From its premiere to the next five days [it has attracted] a million viewers, and I hope it continues to rise,” said the producer of “Ada Apa Dengan Cinta 2” (AADC 2) on the sidelines of a press conference with the cast in Surabaya as quoted by Bisnis.com on Thursday. Mira, also the scriptwriter of AADC 2, has extended her gratitude over the enthusiasm of Indonesian viewers, and the response that she said was overwhelming. She said that the number of viewers overseas, among others in Malaysia has helped the film scored two million ringgit or around Rp6.4 billion after five days of screening in 100 theatres in the country. The film has also received warm reception in Brunei Darussalam. However, she did not reveal the number of viewers. The press conference in Surabaya was also attended by AADC 2 filmmaker Riri Riza and the main cast, among others, Nicholas Saputra (Rangga), Dian Sastrowardoyo, (Cinta), Adinia Wirasti (Karmen), Sissy Prescillia (Milly) and Dennis Adhiswara (Mamet). Riri Riza revealed the secret behind the movie’s success. He claims that he is proud of AADC 2, because the actors are capable of playing their respective roles despite not being in their teens anymore. “Dian Sastrowardoyo, dispate being a mother in real life, was able to act like a single women and a girl who falls in love,” he said",
+			rating: 4.4,
+			postedAt: now.format('dddd, MMMM Do YYYY, h:mm:ss a'),
+			imageUrl: "http://cdn.tmpo.co/data/2016/02/15/id_482531/482531_620.jpg",
+			category: 1	
+		}
+	Rating.collection.insert(ratings, function(err, docs) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			})
+		} else {
+			res.json({
+				"message": "Berhasil cuk"
+			});
+		}
+	});
+	Follow.collection.insert(follows, function(err, docs) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			})
+		} else {
+			res.json({
+				"message": "Berhasil cuk"
+			});
+		}
+	});
+	Bookmark.collection.insert(bookmarks, function(err, docs) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			})
+		} else {
+			res.json({
+				"message": "Berhasil cuk"
+			});
+		}
+	});
+
+	Post.collection.insert(posts, function(err, docs) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			})
+		} else {
+			res.json({
+				"message": "Berhasil cuk"
+			});
+		}
+	});
+	Publisher.collection.insert(publisher, function(err, docs) {
+		if (err) {
+			res.json({
+				"message": "Gagal cuk"
+			})
+		} else {
+			res.json({
+				"message": "Berhasil cuk"
+			});
+		}
+	});
 	Category.collection.insert(categories, function(err, docs) {
 		if (err) {
 			res.json({
