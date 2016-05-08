@@ -9,7 +9,6 @@ var BookmarkSchema   = new Schema({
     publisherId:String,
     publisher: String,
     rating: Number,
-    title: String,
 });
 
 module.exports = mongoose.model('Bookmark', BookmarkSchema);

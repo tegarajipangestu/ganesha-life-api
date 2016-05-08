@@ -104,7 +104,6 @@ mobileglapi.post('/seeding', function(req, res) {
 		categoryId:"1",
 	}
 	var users = {
-		"_id":"1",
     "confirmed": 1,
     "value": 100,
     "imageUrl": "https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true",
@@ -115,7 +114,6 @@ mobileglapi.post('/seeding', function(req, res) {
     "username": "tegarnization",	
 	}
 	var publisher = {
-		"_id": "1",
     "confirmed": 1,
     "value": 50,
     "imageUrl": "https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true",
@@ -131,29 +129,28 @@ mobileglapi.post('/seeding', function(req, res) {
 	}
 	var categories =
 		[{
-			_id:"1",
+			_id:1,
 			name: "highlight",
 			description: "Semua yang hits ada di sini"
 		}, {
-			_id:"2",
+			_id:2,
 			name: "lomba",
 			description: "Semua yang lomba ada di sini"
 		}, {
-			_id:"3",
+			_id:3,
 			name: "acara",
 			description: "Semua yang acara ada di sini"
 		}, {
-			_id:"4",
+			_id:4,
 			name: "beasiswa",
 			description: "Semua yang beasiswa ada di sini"
 		}, {
-			_id:"5",
+			_id:5,
 			name: "isukampus",
 			description: "Semua yang beasiswa ada di sini"
 		}, ];
 
 		var posts = {
-			_id: "1",
 			title: "Secret Behind AADC 2`s Success Revealed",
 			publisher: "HMIF ITB",
 			publisherId: "1",
@@ -166,7 +163,7 @@ mobileglapi.post('/seeding', function(req, res) {
 	UserSession.collection.insert(usersession, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "UserSession Gagal cuk"
 			});
 			return;
 		}
@@ -174,7 +171,7 @@ mobileglapi.post('/seeding', function(req, res) {
 	Rating.collection.insert(ratings, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "Rating Gagal cuk"
 			});
 			return;
 		}
@@ -182,7 +179,7 @@ mobileglapi.post('/seeding', function(req, res) {
 	FollowPublisher.collection.insert(follow_publisher, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "FollowPublisher Gagal cuk"
 			});
 			return;
 		}
@@ -190,7 +187,7 @@ mobileglapi.post('/seeding', function(req, res) {
 	FollowCategory.collection.insert(follow_category, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "FollowCategory cuk"
 			});
 			return;
 		}
@@ -198,7 +195,7 @@ mobileglapi.post('/seeding', function(req, res) {
 	Bookmark.collection.insert(bookmarks, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "Bookmark Gagal cuk"
 			});
 			return;
 		}
@@ -207,7 +204,7 @@ mobileglapi.post('/seeding', function(req, res) {
 	Post.collection.insert(posts, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "Post Gagal cuk"
 			});
 			return;
 		}
@@ -215,7 +212,7 @@ mobileglapi.post('/seeding', function(req, res) {
 	Publisher.collection.insert(publisher, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "Publisher Gagal cuk"
 			});
 			return;
 		}
@@ -223,7 +220,7 @@ mobileglapi.post('/seeding', function(req, res) {
 	Category.collection.insert(categories, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "Category Gagal cuk"
 			});
 			return;
 		}
@@ -231,10 +228,13 @@ mobileglapi.post('/seeding', function(req, res) {
 	User.collection.insert(users, function(err, docs) {
 		if (err) {
 			res.json({
-				"message": "Gagal cuk"
+				"message": "User Gagal cuk"
 			});
 			return;
 		}
+	});
+	res.json({
+		"message": "Berhasil cuk"
 	});
 });
 
@@ -249,7 +249,7 @@ post(function(req, res) {
 			templateRes.alerts = {code: 401, message:"Anda tidak terotentikasi"};
 			res.send(templateRes);
 		}
-	})
+	});
 	FollowPublisher.find({userId:req.body.userId}, function(err, follows) {
 		if (err) {
 			templateRes.alerts = {code: 200, message:"User tidak memfollow publisher apapun"};
@@ -270,6 +270,37 @@ post(function(req, res) {
 		}
 	});
 });
+
+mobileglapi.route('/setbookmark').
+post(function (req,res) {
+	templateRes.error = true;
+	templateRes.alerts = {code: 200, message:"Bookmark gagal"};
+	templateRes.data = {};
+	UserSession.findOne({sessionId:req.get('token')}, function (err,session) {
+		if (!session) {
+			templateRes.alerts = {code: 401, message:"Anda tidak terotentikasi"};
+			res.send(templateRes);
+		}
+	  Post.findById(req.body.postId, function (err, post) {
+	  	if (!post) {
+	  		res.send(templateRes);
+	  		return;
+	  	}
+	  	var query = {user_id:req.body.userId, post_id:req.body.postId, title: post.title, publisherId: post.publisherId, publisher:post.publisher, rating:post.rating};
+	  	Bookmark.create(query, function (err) {
+		  	if (!post) {
+		  		res.send(templateRes);
+		  		return;
+		  	}
+				templateRes.error = false;
+				templateRes.alerts = {code: 200, message:"Bookmark berhasil"};
+				templateRes.data = query;
+				res.send(templateRes);
+				return;
+	  	});
+	  });
+	});
+})
 
 mobileglapi.route('/login').
 post(function(req, res) {
