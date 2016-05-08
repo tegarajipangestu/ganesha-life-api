@@ -10,6 +10,7 @@ var PostSchema   = new Schema({
     publisherId: String,
     content: String,
     rating: Number,
+    ratersCount:Number,
     postedAt: Date,
     imageUrl: String, 
     kategori: Number,

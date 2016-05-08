@@ -156,7 +156,8 @@ mobileglapi.post('/seeding', function(req, res) {
 			publisherId: "1",
 			content: "- “Ada Apa Dengan Cinta 2” (What’s Up With Love 2) film has been attracting one million viewers since its premiere on April, 28, Mira Lesmana said. “From its premiere to the next five days [it has attracted] a million viewers, and I hope it continues to rise,” said the producer of “Ada Apa Dengan Cinta 2” (AADC 2) on the sidelines of a press conference with the cast in Surabaya as quoted by Bisnis.com on Thursday. Mira, also the scriptwriter of AADC 2, has extended her gratitude over the enthusiasm of Indonesian viewers, and the response that she said was overwhelming. She said that the number of viewers overseas, among others in Malaysia has helped the film scored two million ringgit or around Rp6.4 billion after five days of screening in 100 theatres in the country. The film has also received warm reception in Brunei Darussalam. However, she did not reveal the number of viewers. The press conference in Surabaya was also attended by AADC 2 filmmaker Riri Riza and the main cast, among others, Nicholas Saputra (Rangga), Dian Sastrowardoyo, (Cinta), Adinia Wirasti (Karmen), Sissy Prescillia (Milly) and Dennis Adhiswara (Mamet). Riri Riza revealed the secret behind the movie’s success. He claims that he is proud of AADC 2, because the actors are capable of playing their respective roles despite not being in their teens anymore. “Dian Sastrowardoyo, dispate being a mother in real life, was able to act like a single women and a girl who falls in love,” he said",
 			rating: 4.4,
-			postedAt: now.format('dddd, MMMM Do YYYY, h:mm:ss a'),
+			ratersCount: 100,
+			postedAt: now.format(),
 			kategori: 1,
 			imageUrl: "http://cdn.tmpo.co/data/2016/02/15/id_482531/482531_620.jpg",
 		}
@@ -288,12 +289,50 @@ post(function (req,res) {
 	  	}
 	  	var query = {user_id:req.body.userId, post_id:req.body.postId, title: post.title, publisherId: post.publisherId, publisher:post.publisher, rating:post.rating};
 	  	Bookmark.create(query, function (err) {
-		  	if (!post) {
+		  	if (err) {
 		  		res.send(templateRes);
 		  		return;
 		  	}
 				templateRes.error = false;
 				templateRes.alerts = {code: 200, message:"Bookmark berhasil"};
+				templateRes.data = query;
+				res.send(templateRes);
+				return;
+	  	});
+	  });
+	});
+})
+
+mobileglapi.route('/setrating').
+post(function (req,res) {
+	templateRes.error = true;
+	templateRes.alerts = {code: 200, message:"Set Rating gagal"};
+	templateRes.data = {};
+	UserSession.findOne({sessionId:req.get('token')}, function (err,session) {
+		if (!session) {
+			templateRes.alerts = {code: 401, message:"Anda tidak terotentikasi"};
+			res.send(templateRes);
+		}
+	  Post.findById(req.body.postId, function (err, post) {
+	  	if (!post) {
+	  		res.send(templateRes);
+	  		return;
+	  	}
+	  	var query = {user_id:req.body.userId, post_id:req.body.postId, title: post.title, rating:req.body.rating, description:req.body.description};
+	  	Rating.create(query, function (err) {
+		  	if (err) {
+		  		res.send(templateRes);
+		  		return;
+		  	}
+		  	Post.findById(req.body.postId, function (err, post) {
+		  		post.rating = ((post.rating * post.ratersCount) + req.body.rating) / (post.ratersCount+1);
+		  		post.ratersCount = post.ratersCount+1;
+		  		post.save(function (err) {
+		  			if (err) console.log(err);
+		  		});
+		  	})
+				templateRes.error = false;
+				templateRes.alerts = {code: 200, message:"Rating berhasil"};
 				templateRes.data = query;
 				res.send(templateRes);
 				return;
@@ -318,7 +357,7 @@ post(function(req, res) {
 		}
 		if (user.password === md5(req.body.password)) {
 			var token = randtoken.generate(32);
-			UserSession.create({userId: user._id, sessionId: token, createdAt: now.format('dddd, MMMM Do YYYY, h:mm:ss a')}, function(err) {
+			UserSession.create({userId: user._id, sessionId: token, createdAt: now.format()}, function(err) {
 				if (err) {
 					res.send(templateRes);
 					return
@@ -451,7 +490,7 @@ post(function(req, res) {
 		post.publisherId = c + 1;
 		post.content = req.body.content;
 		post.rating = 0;
-		post.postedAt = now.format('dddd, MMMM Do YYYY, h:mm:ss a');
+		post.postedAt = now.format();
 		post.imageUrl = (req.body.imageUrl === undefined) ? 'https://qph.is.quoracdn.net/main-qimg-3b0b70b336bbae35853994ce0aa25013?convert_to_webp=true' : req.body.imageUrl;
 		post.category = (req.body.category === undefined) ? 'umum' : req.body.category;
 		post.save(function(err) {
