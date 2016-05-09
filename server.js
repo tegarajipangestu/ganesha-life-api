@@ -77,32 +77,6 @@ mobileglapi.post('/seeding', function(req, res) {
 	Rating.collection.remove(function (err) {	
 	});
 
-	var usersession = {
-		userId: "1",
-		sessionId:"1",
-	}
-	var ratings = {
-		userId: "1",
-		postId: "1",
-		rating: 3,
-		description: "Post ini sangat inspiratif"
-	}
-	var bookmarks = {
-		user_id: "1",
-		post_id:"1",
-		title: "Secret Behind AADC 2`s Success Revealed",
-		publisherId: "1",
-		publisher: "HMIF ITB",
-		rating: 4.0,
-	}
-	var follow_publisher = {
-		userId: "1",
-		publisherId:"1",
-	}
-	var follow_category = {
-		userId: "1",
-		categoryId:"1",
-	}
 	var users = {
     "confirmed": 1,
     "value": 100,
@@ -161,47 +135,6 @@ mobileglapi.post('/seeding', function(req, res) {
 			kategori: 1,
 			imageUrl: "http://cdn.tmpo.co/data/2016/02/15/id_482531/482531_620.jpg",
 		}
-	UserSession.collection.insert(usersession, function(err, docs) {
-		if (err) {
-			res.json({
-				"message": "UserSession Gagal cuk"
-			});
-			return;
-		}
-	});
-	Rating.collection.insert(ratings, function(err, docs) {
-		if (err) {
-			res.json({
-				"message": "Rating Gagal cuk"
-			});
-			return;
-		}
-	});
-	FollowPublisher.collection.insert(follow_publisher, function(err, docs) {
-		if (err) {
-			res.json({
-				"message": "FollowPublisher Gagal cuk"
-			});
-			return;
-		}
-	});
-	FollowCategory.collection.insert(follow_category, function(err, docs) {
-		if (err) {
-			res.json({
-				"message": "FollowCategory cuk"
-			});
-			return;
-		}
-	});
-	Bookmark.collection.insert(bookmarks, function(err, docs) {
-		if (err) {
-			res.json({
-				"message": "Bookmark Gagal cuk"
-			});
-			return;
-		}
-	});
-
 	Post.collection.insert(posts, function(err, docs) {
 		if (err) {
 			res.json({
@@ -233,6 +166,78 @@ mobileglapi.post('/seeding', function(req, res) {
 			});
 			return;
 		}
+	});
+	User.findOne({username: "tegarnization"}, function (err, user) {
+		var usersession = {
+			userId: user.id,
+			sessionId:randtoken.generate(32),
+		}
+		UserSession.collection.insert(usersession, function(err, docs) {
+			if (err) {
+				res.json({
+					"message": "UserSession Gagal cuk"
+				});
+				return;
+			}
+		});
+		Post.findOne({publisher:"HMIF ITB"}, function (err, post) {
+			var bookmarks = {
+				user_id: user.id,
+				post_id: post.id,
+				title: "Secret Behind AADC 2`s Success Revealed",
+				publisherId: "1",
+				publisher: "HMIF ITB",
+				rating: 4.0,
+			}
+			Bookmark.collection.insert(bookmarks, function(err, docs) {
+				if (err) {
+					res.json({
+						"message": "Bookmark Gagal cuk"
+					});
+					return;
+				}
+			});
+			Publisher.findOne({publisher:"HMIF ITB"}, function (err, publisher) {
+				var follow_publisher = {
+					userId: user.id,
+					publisherId: publisher.id,
+				}
+				FollowPublisher.collection.insert(follow_publisher, function(err, docs) {
+					if (err) {
+						res.json({
+							"message": "FollowPublisher Gagal cuk"
+						});
+						return;
+					}
+				});
+			});
+			var follow_category = {
+				userId: user.id,
+				categoryId:post.kategori,
+			}
+			FollowCategory.collection.insert(follow_category, function(err, docs) {
+				if (err) {
+					res.json({
+						"message": "FollowCategory cuk"
+					});
+					return;
+				}
+			});
+			var ratings = {
+				userId: user.id,
+				postId: post.id,
+				rating: 3,
+				description: "Post ini sangat inspiratif"
+			}
+			Rating.collection.insert(ratings, function(err, docs) {
+				if (err) {
+					res.json({
+						"message": "Rating Gagal cuk"
+					});
+					return;
+				}
+			});			
+		});
 	});
 	res.json({
 		"message": "Berhasil cuk"
@@ -291,6 +296,46 @@ post(function(req, res) {
 		templateRes.data = posts;
 		res.send(templateRes);
 	});
+});
+
+mobileglapi.route('/library').
+post(function(req, res) {
+	templateRes.error = true;
+	templateRes.alerts = {code: 200, message:"Retrieve library gagal"};
+	templateRes.data = {};
+	var result = [];
+	UserSession.findOne({sessionId:req.get('token')}, function (err,session) {
+		if (!session) {
+			templateRes.alerts = {code: 401, message:"Anda tidak terotentikasi"};
+			res.send(templateRes);
+		}
+	});
+	if (req.body.type==='1') {
+		FollowPublisher.find({userId: req.body.userId}, function (err, docs) {
+				var result = [];
+				for (var i=0;i<docs.length;i++) {
+					Publisher.findById(docs[i].publisherId, function (err, publisher) {
+						console.log(publisher);
+						result.push(publisher);
+						if (i>=docs.length) {
+							templateRes.data = result;
+							templateRes.error = true;
+							templateRes.alerts = {code: 200, message:"Retrieve library berhasil"};
+							console.log(templateRes.data);
+							res.send(templateRes);
+							return;											
+						}
+					});
+				}
+		});
+	}
+	else if (req.body.type==='2') {
+		FollowCategory.find({userId: req.body.userId}), function (err, follow_category) {
+			console.log(follow_category);
+			res.send(follow_category);
+			return;
+		}				
+	}
 });
 
 mobileglapi.route('/setbookmark').
